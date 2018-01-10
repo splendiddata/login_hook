@@ -34,6 +34,11 @@ void _PG_init(void)
 	char* dbName;
 	Oid loginHookNamespaceOid;
 
+	if (!OidIsValid(MyDatabaseId)) {
+		elog(DEBUG3,"login_hook did not do aything because MyDatabaseId is invalid");
+		return;
+	}
+
 	/*
 	 * Start a transaction
 	 */
