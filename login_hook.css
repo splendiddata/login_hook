@@ -1,0 +1,31 @@
+body {
+  width:70em;
+}
+
+div.copyright {
+  font-size:xx-small;
+  color:gray;
+  margin-top:30px;
+}
+
+.example {
+  border-color:gray;
+  border-style:solid;
+  border-width:1px;
+  border-collapse:collapse;
+  padding-left:10px;
+  padding-right:10px;
+  padding-top:5px;
+  padding-bottom:5px;
+  text-align:left;
+  width:100%;
+}
+
+pre {
+  font-family: "Courier New", Courier, monospace;
+  padding-left:25px;
+}
+
+h3 {
+  margin-top:25px;
+}

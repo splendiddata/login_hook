@@ -1,0 +1,90 @@
+<!doctype html>
+<html>
+<head>
+<title>Description of the login_hook extension</title>
+<link href="login_hook.css" rel="stylesheet" type="text/css">
+<meta charset="UTF-8">
+</head>
+<body>
+  <h1>The login_hook database extension</h1>
+  <p>The login_hook extension provides a way to execute some code at client
+    login.</p>
+  <p>The login_hook extension consists of a shared library login_hook.so and
+    schema login_hook with function login() returns void.</p>
+  <h3>Installation</h3>
+  <p>First you'll need to compile the database extension. Please check the
+    Postgres manual for that.</p>
+  <p>After compilation, the login_hook.so library must be set to load at
+    session start. So please alter the postgresql.conf file and add the
+    login_hook.so library to the session_preload_libraries setting. For example:</p>
+  <table class="example">
+    <tr>
+      <td><pre>      .
+      .
+      .
+
+#------------------------------------------------------------------------------
+# CUSTOMIZED OPTIONS
+#------------------------------------------------------------------------------
+
+# Add settings for extensions here
+#
+session_preload_libraries = 'login_hook.so'</pre></td>
+    </tr>
+  </table>
+  <p>Restart the database to activate the setting</p>
+  <p>Then execute</p>
+  <table class="example">
+    <tr>
+      <td><pre>create extension login_hook;</pre></td>
+    </tr>
+  </table>
+  <p>in the database in which you want the login function to be executed
+    when a client logs in.</p>
+  <p>And then override the login_hook.login() function to make it work for you.
+    The one that is defined in the database extension is not very useful. You
+    can use any programming language that is supported by your database a long
+    as you stick to the signature (named login_hook.login, no arguments,
+    returning void). Example:</p>
+  <table class="example">
+    <tr>
+      <td><pre>
+create or replace function login_hook.login()
+                           returns void
+                           security definer
+                           language plpgsql
+                           as
+$$
+declare
+    &lt; ... whatever you need ... &gt;
+begin
+    &lt; ... do something useful ... &gt;
+end
+$$;</pre></td>
+    </tr>
+  </table>
+  <p>Be aware of the fact that the login_hook.login() will be executed as
+    part of process start. The process is not fully initialized yet. For example
+    the system catalog (the pg_catalog schema) may not yet be fully operational.
+    But most actions can be performed.</p>
+  <p>The login_hook.login() function will only be executed in a database
+    that has the login_hook database extension installed (or more precise: if a
+    database contains schema 'login_hook', then the existence of function
+    login_hook.login() is taken for granted and invocation s attempted). If a
+    database does not have a login_hook schema, no attempt is made to invoke the
+    function.</p>
+
+  <div class="copyright">
+    Copyright (c) Splendid Data Product Development B.V. 2013<br> This
+    program is free software: You may redistribute and/or modify under the terms
+    of the GNU General Public License as published by the Free Software
+    Foundation, either version 3 of the License, or (at Client's option) any
+    later version.<br> This program is distributed in the hope that it will
+    be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+    Public License for more details.<br> You should have received a copy of
+    the GNU General Public License along with this program. If not, Client
+    should obtain one via www.gnu.org/licenses/.
+  </div>
+<body>
+</html>
