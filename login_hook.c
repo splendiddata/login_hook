@@ -34,8 +34,17 @@ void _PG_init(void)
 	char* dbName;
 	Oid loginHookNamespaceOid;
 
-	if (!OidIsValid(MyDatabaseId)) {
-		elog(DEBUG3,"login_hook did not do anything because MyDatabaseId is invalid");
+	if (IsBackgroundWorker)
+	{
+		elog(DEBUG3,
+				"login_hook did not do anything because we are in a background worker");
+		return;
+	}
+
+	if (!OidIsValid(MyDatabaseId))
+	{
+		elog(DEBUG3,
+				"login_hook did not do anything because MyDatabaseId is invalid");
 		return;
 	}
 
