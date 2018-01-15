@@ -23,5 +23,18 @@ create function login_hook.login() returns void language plpgsql as $$
 begin
 	raise notice 'login_hook.login() invoked - please override';
 end $$;
-
 grant execute on function login_hook.login() to public;
+
+/*
+ * login_hook.get_login_hook_version() just returns the current version
+ * of the login_hook database extension. Currently: "1.0".
+ */
+create or replace function login_hook.get_login_hook_version()
+    returns text 
+    immutable leakproof
+    as 'login_hook.so', 'get_login_hook_version'
+    language C
+    security definer;
+comment on function login_hook.get_login_hook_version() is
+    'Returns the version of this database''s login_hook database extension';
+grant execute on function login_hook.get_login_hook_version() to public;

@@ -19,12 +19,15 @@
 #include "executor/spi.h"
 #include "miscadmin.h"
 #include "commands/dbcommands.h"
+#include "access/parallel.h"
 #include "access/xact.h"
 #include "catalog/namespace.h"
 
 #ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
 #endif
+
+static char* version = "1.0";
 
 void _PG_init(void);
 
@@ -33,8 +36,10 @@ void _PG_init(void)
 {
 	char* dbName;
 	Oid loginHookNamespaceOid;
-
-	if (IsBackgroundWorker)
+	elog(DEBUG3,
+			"_PG_init() in login_hook.so, MyProcPid=%d, MyDatabaseId=%d, IsBackgroundWorker=%d, InitializingParallelWorker=%d",
+			MyProcPid, MyDatabaseId, IsBackgroundWorker, InitializingParallelWorker);
+	if (IsBackgroundWorker || InitializingParallelWorker)
 	{
 		elog(DEBUG3,
 				"login_hook did not do anything because we are in a background worker");
@@ -86,4 +91,18 @@ void _PG_init(void)
 	 * commit
 	 */
 	CommitTransactionCommand();
+}
+
+/*
+ * function login_hook.get_login_hook_version() returns text.
+ *
+ * This function returns the current version of this database extension
+ */
+PG_FUNCTION_INFO_V1( get_login_hook_version);
+Datum get_login_hook_version( PG_FUNCTION_ARGS)
+{
+	Datum pg_versioning_version = (Datum) palloc(VARHDRSZ + strlen(version));
+	SET_VARSIZE(pg_versioning_version, VARHDRSZ + strlen(version));
+	memcpy(VARDATA(pg_versioning_version), version, strlen(version));
+	PG_RETURN_DATUM(pg_versioning_version);
 }

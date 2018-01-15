@@ -11,6 +11,9 @@
     login.</p>
   <p>The login_hook extension consists of a shared library login_hook.so and
     schema login_hook with function login() returns void.</p>
+  <h3>Postgres version</h3>
+  <p>For the login_hook database extension postgresql version 10 or higher
+    is required.</p>
   <h3>Installation</h3>
   <p>First you'll need to compile the database extension. Please check the
     Postgres manual for that.</p>
@@ -41,10 +44,10 @@ session_preload_libraries = 'login_hook.so'</pre></td>
   </table>
   <p>in the database in which you want the login function to be executed
     when a client logs in.</p>
-  <p>And then override the login_hook.login() function to make it work for you.
-    The one that is defined in the database extension is not very useful. You
-    can use any programming language that is supported by your database a long
-    as you stick to the signature (named login_hook.login, no arguments,
+  <p>And then override the login_hook.login() function to make it work for
+    you. The one that is defined in the database extension is not very useful.
+    You can use any programming language that is supported by your database a
+    long as you stick to the signature (named login_hook.login, no arguments,
     returning void). Example:</p>
   <table class="example">
     <tr>
