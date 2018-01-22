@@ -27,7 +27,7 @@
 PG_MODULE_MAGIC;
 #endif
 
-static char* version = "1.0";
+static char* version = "1.0.1";
 
 void _PG_init(void);
 

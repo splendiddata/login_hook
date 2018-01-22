@@ -17,6 +17,7 @@
 
 create schema if not exists login_hook;
 comment on schema login_hook is 'Belongs to the login_hook extension';
+grant usage on schema login_hook to public;
 
 create function login_hook.login() returns void language plpgsql as $$
 -- This function is to be overridden to be effective
