@@ -21,13 +21,14 @@
 #include "commands/dbcommands.h"
 #include "access/parallel.h"
 #include "access/xact.h"
+#include "access/transam.h"
 #include "catalog/namespace.h"
 
 #ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
 #endif
 
-static char* version = "1.0.1";
+static char* version = "1.0.2";
 
 void _PG_init(void);
 
@@ -36,9 +37,12 @@ void _PG_init(void)
 {
 	char* dbName;
 	Oid loginHookNamespaceOid;
+	int startedATransaction = 0;
+
 	elog(DEBUG3,
 			"_PG_init() in login_hook.so, MyProcPid=%d, MyDatabaseId=%d, IsBackgroundWorker=%d, InitializingParallelWorker=%d",
 			MyProcPid, MyDatabaseId, IsBackgroundWorker, InitializingParallelWorker);
+
 	if (IsBackgroundWorker || InitializingParallelWorker)
 	{
 		elog(DEBUG3,
@@ -53,10 +57,13 @@ void _PG_init(void)
 		return;
 	}
 
-	/*
-	 * Start a transaction
-	 */
-	StartTransactionCommand();
+	if (GetCurrentTransactionIdIfAny() == InvalidTransactionId) {
+		/*
+		 * If we're not in a transaction, start one.
+		 */
+		StartTransactionCommand();
+		startedATransaction = 1;
+	}
 
 	dbName = get_database_name(MyDatabaseId);
 
@@ -87,10 +94,12 @@ void _PG_init(void)
 				dbName);
 	}
 
-	/*
-	 * commit
-	 */
-	CommitTransactionCommand();
+	if (startedATransaction) {
+		/*
+		 * commit the transaction we started
+		 */
+		CommitTransactionCommand();
+	}
 }
 
 /*
