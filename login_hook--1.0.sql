@@ -19,13 +19,6 @@ create schema if not exists login_hook;
 comment on schema login_hook is 'Belongs to the login_hook extension';
 grant usage on schema login_hook to public;
 
-create function login_hook.login() returns void language plpgsql as $$
--- This function is to be overridden to be effective
-begin
-	raise notice 'login_hook.login() invoked - please override';
-end $$;
-grant execute on function login_hook.login() to public;
-
 /*
  * login_hook.get_login_hook_version() just returns the current version
  * of the login_hook database extension. Currently: "1.0".

@@ -10,16 +10,18 @@
   <p>The login_hook extension provides a way to execute some code at client
     login.</p>
   <p>The login_hook extension consists of a shared library login_hook.so and
-    schema login_hook with function login() returns void.</p>
+    schema login_hook in which a function login() can be created to perform
+    some after-login code.</p>
   <h3>Postgres version</h3>
-  <p>For the login_hook database extension postgresql version 10 or higher
-    is required.</p>
+  <p>The login_hook database extension is intended for postgresql versions 10
+   and higher.</p>
   <h3>Installation</h3>
   <p>First you'll need to compile the database extension. Please check the
     Postgres manual for that.</p>
   <p>After compilation, the login_hook.so library must be set to load at
     session start. So please alter the postgresql.conf file and add the
-    login_hook.so library to the session_preload_libraries setting. For example:</p>
+    login_hook.so library to the session_preload_libraries setting. For example:
+    </p>
   <table class="example">
     <tr>
       <td><pre>      .
@@ -32,7 +34,7 @@
 
 # Add settings for extensions here
 #
-session_preload_libraries = 'login_hook.so'</pre></td>
+session_preload_libraries = 'login_hook'</pre></td>
     </tr>
   </table>
   <p>Restart the database to activate the setting</p>
@@ -44,11 +46,9 @@ session_preload_libraries = 'login_hook.so'</pre></td>
   </table>
   <p>in the database in which you want the login function to be executed
     when a client logs in.</p>
-  <p>And then override the login_hook.login() function to make it work for
-    you. The one that is defined in the database extension is not very useful.
-    You can use any programming language that is supported by your database a
-    long as you stick to the signature (named login_hook.login, no arguments,
-    returning void). Example:</p>
+  <p>Then create a login_hook.login() function. It must have no arguments.
+    Returning anything other than void is not very useful as no one will ever
+    see the result. Example:</p>
   <table class="example">
     <tr>
       <td><pre>
@@ -62,45 +62,14 @@ declare
     &lt; ... whatever you need ... &gt;
 begin
     &lt; ... do something useful ... &gt;
+exception when others then
+    raise notice 'login_hook.login() failed';
 end
 $$;</pre></td>
     </tr>
   </table>
-  <p>Be aware of the fact that the login_hook.login() will be executed as
-    part of process start. The process is not fully initialized yet. For example
-    the system catalog (the pg_catalog schema) may not yet be fully operational.
-    But most actions can be performed.</p>
-  <p>The login_hook.login() function will only be executed in a database
-    that has the login_hook database extension installed (or more precise: if a
-    database contains schema 'login_hook', then the existence of function
-    login_hook.login() is taken for granted and invocation s attempted). If a
-    database does not have a login_hook schema, no attempt is made to invoke the
-    function.</p>
-  <h2 style="color: red">Warning</h2>
-  <p>It looks like parallel workers that are started from databases that do
-    NOT have the login_hook extension may fail when session_preload_libraries =
-    'login_hook.so' is set in the config file.</p>
-  <p>
-    <b>Symptoms:</b>
-  </p>
-  <pre>
-ERROR:  invalid cache ID: 35
-CONTEXT:  parallel worker
-</pre>
-  <p>in the serverlog file, and the parallel query fails</p>
-  <p>
-    <b>Work-around:</b>
-  </p>
-  <p>You could set max_parallel_workers to zero in databases that do not
-    have the login_hook extension, but we would not recommend that.</p>
-  <p>Or you could create the login_hook database extension on all databases
-    in the cluster, and override the login_hook.login() function with one that
-    doesn't do anything in the databases that don't need it, like:</p>
-  <pre>
-create extension login_hook;
-create or replace function login_hook.login()
-returns void language plpgsql as
-$$begin end$$;</pre>
+  <p>Make sure that exceptions are properly dealt with because otherwise
+     logging on to the database might be challenging.<p>
   <div class="copyright">
     Copyright (c) Splendid Data Product Development B.V. 2013<br> This
     program is free software: You may redistribute and/or modify under the terms
