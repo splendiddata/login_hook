@@ -23,6 +23,11 @@ create sequence login_hook.invocation_count;
 -- Create the login_hook.login() function
 create function login_hook.login() returns void language plpgsql as $$
 BEGIN
+	IF NOT login_hook.is_executing_login_hook()
+	THEN
+	    RAISE EXCEPTION 'The login_hook.login() function should only be invoked by the login_hook code';
+	END IF;
+	
 	RAISE NOTICE 'login_hook.login() invocation %.', nextval('login_hook.invocation_count');
 END 
 $$;
@@ -56,3 +61,12 @@ select currval('login_hook.invocation_count');
        1
 (1 row)
 
+-- Verify that  the login_hook.login() function can only be invoked as part of the login code
+select login_hook.login();
+ERROR:  The login_hook.login() function should only be invoked by the login_hook code
+CONTEXT:  PL/pgSQL function login_hook.login() line 5 at RAISE
+-- cleanup
+drop function login_hook.login();
+drop sequence login_hook.invocation_count;
+drop schema login_hook cascade;
+NOTICE:  drop cascades to extension login_hook

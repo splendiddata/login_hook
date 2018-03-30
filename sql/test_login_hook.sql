@@ -25,6 +25,11 @@ create sequence login_hook.invocation_count;
 -- Create the login_hook.login() function
 create function login_hook.login() returns void language plpgsql as $$
 BEGIN
+	IF NOT login_hook.is_executing_login_hook()
+	THEN
+	    RAISE EXCEPTION 'The login_hook.login() function should only be invoked by the login_hook code';
+	END IF;
+	
 	RAISE NOTICE 'login_hook.login() invocation %.', nextval('login_hook.invocation_count');
 END 
 $$;
@@ -43,3 +48,11 @@ select * from pg_proc where not proisagg and pg_get_functiondef(oid) = 'nonexist
 
 -- Verify that parallel workers didn't increment the invocation count
 select currval('login_hook.invocation_count');
+
+-- Verify that  the login_hook.login() function can only be invoked as part of the login code
+select login_hook.login();
+
+-- cleanup
+drop function login_hook.login();
+drop sequence login_hook.invocation_count;
+drop schema login_hook cascade;

@@ -29,14 +29,40 @@
 #include "utils/builtins.h"
 
 #ifdef PG_MODULE_MAGIC
-PG_MODULE_MAGIC
-;
+PG_MODULE_MAGIC;
 #endif
 
-static char* version = "1.0.3";
+static char* version = "1.0.4";
+
+static bool isExecutingLogin = false;
+
+/*
+ * function login_hook.get_login_hook_version() returns text.
+ *
+ * This function returns the current version of this database extension
+ */
+PG_FUNCTION_INFO_V1(get_login_hook_version);
+Datum get_login_hook_version( PG_FUNCTION_ARGS)
+{
+	Datum pg_versioning_version = (Datum) palloc(VARHDRSZ + strlen(version));
+	SET_VARSIZE(pg_versioning_version, VARHDRSZ + strlen(version));
+	memcpy(VARDATA(pg_versioning_version), version, strlen(version));
+	PG_RETURN_DATUM(pg_versioning_version);
+}
+
+/*
+ * function login_hook.is_executing_login_hook() returns booean.
+ *
+ * This function returns true if the loginhook.login() function is executing
+ * under control of the login_hook code.
+ */
+PG_FUNCTION_INFO_V1(is_executing_login_hook);
+Datum is_executing_login_hook( PG_FUNCTION_ARGS)
+{
+	PG_RETURN_BOOL(isExecutingLogin);
+}
 
 void _PG_init(void);
-
 /* Module entry point */
 void _PG_init(void)
 {
@@ -44,17 +70,29 @@ void _PG_init(void)
 	Oid loginHookNamespaceOid;
 	int startedATransaction = 0;
 
-	elog(DEBUG3, "_PG_init() in login_hook.so, MyProcPid=%d, MyDatabaseId=%d, IsBackgroundWorker=%d, InitializingParallelWorker=%d", MyProcPid, MyDatabaseId, IsBackgroundWorker, InitializingParallelWorker);
+	elog(DEBUG3,
+			"_PG_init() in login_hook.so, MyProcPid=%d, MyDatabaseId=%d, IsBackgroundWorker=%d, isExecutingLogin=%d",
+			MyProcPid, MyDatabaseId, IsBackgroundWorker, isExecutingLogin);
 
-	if (IsBackgroundWorker || InitializingParallelWorker)
-	{
-		elog(DEBUG1, "login_hook did not do anything because we are in a background worker");
-		return;
+	/*
+	 * When _PG_init invokes the login() function, _PG_init processing is not
+	 * complete. So when that function invokes is_executing_login_hook() - which
+	 * it is supposed to do - then shared library loading code is executed
+	 * again, including the invocation of this _PG_init function.
+	 */
+	if (isExecutingLogin) {
+		elog(DEBUG3, "nested invocation of login_hook._PG_INIT");
+				return;
 	}
 
-	if (!OidIsValid(MyDatabaseId))
+	/*
+	 * Parallel workers have their own initialisation. The login() function
+	 * must not be invoked for them.
+	 */
+	if (IsBackgroundWorker)
 	{
-		elog(DEBUG1, "login_hook did not do anything because MyDatabaseId is invalid");
+		elog(DEBUG1,
+				"login_hook did not do anything because we are in a background worker");
 		return;
 	}
 
@@ -76,11 +114,11 @@ void _PG_init(void)
 	loginHookNamespaceOid = get_namespace_oid("login_hook", true);
 	if (OidIsValid(loginHookNamespaceOid))
 	{
-		oidvector* emptyArgVector = buildoidvector(NULL, 0);
-
 		/*
-		 * Check if a no-argument function called "login" exists in namespace "login_hook"
+		 * Check if a no-argument function called "login" exists in namespace
+		 * "login_hook"
 		 */
+		oidvector* emptyArgVector = buildoidvector(NULL, 0);
 		if (SearchSysCacheExists3(PROCNAMEARGSNSP, CStringGetDatum("login"),
 				PointerGetDatum(buildoidvector(NULL, 0)),
 				ObjectIdGetDatum(loginHookNamespaceOid)))
@@ -88,22 +126,32 @@ void _PG_init(void)
 
 			SPI_connect();
 
-			elog(DEBUG3, "login_hook will execute select login_hook.login() in database %s", dbName);
+			elog(DEBUG3,
+					"login_hook will execute select login_hook.login() in database %s",
+					dbName);
+			isExecutingLogin = true;
 			SPI_execute("select login_hook.login()", false, 1);
-			elog(DEBUG3, "login_hook is back from select login_hook.login() in database %s", dbName);
+			isExecutingLogin = false;
+			elog(DEBUG3,
+					"login_hook is back from select login_hook.login() in database %s",
+					dbName);
 
 			SPI_finish();
 		}
 		else
 		{
-			elog(WARNING, "Function login_hook.login() is not invoked because it does not exist in database %s", dbName);
+			elog(WARNING,
+					"Function login_hook.login() is not invoked because it does not exist in database %s",
+					dbName);
 		}
 
 		pfree(emptyArgVector);
 	}
 	else
 	{
-		elog(DEBUG1, "login_hook will not execute anything because extension login_hook does not exist in database %s", dbName);
+		elog(DEBUG1,
+				"login_hook will not execute anything because schema login_hook does not exist in database %s",
+				dbName);
 	}
 
 	if (startedATransaction)
@@ -113,18 +161,4 @@ void _PG_init(void)
 		 */
 		CommitTransactionCommand();
 	}
-}
-
-/*
- * function login_hook.get_login_hook_version() returns text.
- *
- * This function returns the current version of this database extension
- */
-PG_FUNCTION_INFO_V1(get_login_hook_version);
-Datum get_login_hook_version( PG_FUNCTION_ARGS)
-{
-	Datum pg_versioning_version = (Datum) palloc(VARHDRSZ + strlen(version));
-	SET_VARSIZE(pg_versioning_version, VARHDRSZ + strlen(version));
-	memcpy(VARDATA(pg_versioning_version), version, strlen(version));
-	PG_RETURN_DATUM(pg_versioning_version);
 }

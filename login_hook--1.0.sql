@@ -23,6 +23,20 @@ grant usage on schema login_hook to public;
  * login_hook.get_login_hook_version() just returns the current version
  * of the login_hook database extension. Currently: "1.0".
  */
+create or replace function login_hook.is_executing_login_hook()
+    returns boolean 
+    leakproof
+    language C
+    security definer
+    as 'login_hook.so', 'is_executing_login_hook';
+comment on function login_hook.is_executing_login_hook() is
+    'Returns true if the login_hook.login() function is executed under control of the login_hook logic';
+grant execute on function login_hook.is_executing_login_hook() to public;
+
+/*
+ * login_hook.get_login_hook_version() just returns the current version
+ * of the login_hook database extension. Currently: "1.0".
+ */
 create or replace function login_hook.get_login_hook_version()
     returns text 
     immutable leakproof

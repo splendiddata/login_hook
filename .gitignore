@@ -4,3 +4,5 @@
 /.project
 /.settings/
 /results/
+/regression.diffs
+/regression.out
