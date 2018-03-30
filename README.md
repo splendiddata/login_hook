@@ -90,13 +90,13 @@ prove challenging.
 ## Functions
 **login_hook.is_executing_login_hook() returns boolean**
 
-    returns true when the login\_hook.login() function is invoked under 
+    returns true when the login_hook.login() function is invoked under 
     control of the login_hook code. When invoked during a normal
     session, it will always return false.
     
 **login_hook.get_login_hook_version() returns text**
 
-    returns the compiled version of the login\_hook software.
+    returns the compiled version of the login_hook software.
     
 **login_hook.login() returns void**
 
