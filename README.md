@@ -5,9 +5,12 @@ Oracle's after logon trigger.
 The login_hook database extension is developed in Postgres 10. It might work on 
 older Postgres versions as well but that hasn't been tested.
 ## Installation
-First you'll need to compile the database extension. Please check the
+First you'll need to compile the database extension (Check the
 [Postgres manual](https://www.postgresql.org/docs/10/static/extend-pgxs.html) 
-for that.
+for more information):<br>
+ - Make sure pg_config points to the right places<br>
+ - execute: make<br>
+ - execute: sudo make install<br>
 
 After compilation, the login_hook.so library must be set to load at session
 start. So please alter the postgresql.conf file and add the login\_hook.so
