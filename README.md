@@ -1,9 +1,15 @@
 # login_hook
 Postgres database extension to execute som code on user login, comparable to
 Oracle's after logon trigger.
+
 ## Postgres versions
-The login_hook database extension is developed in Postgres 10. It might work on 
-older Postgres versions as well but that hasn't been tested.
+The login_hook database extension is developed in Postgres 10. 
+
+It works as well in Postgres versions 9.5 and 9.6, but the regression tests will
+fail because parallel settings are different in 9.6 and don't even exist in 9.5.
+
+Older versions haven't been tested.
+
 ## Installation
 First you'll need to compile the database extension (Check the
 [Postgres manual](https://www.postgresql.org/docs/10/static/extend-pgxs.html) 
