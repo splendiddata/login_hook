@@ -20,8 +20,10 @@ comment on schema login_hook is 'Belongs to the login_hook extension';
 grant usage on schema login_hook to public;
 
 /*
- * login_hook.get_login_hook_version() just returns the current version
- * of the login_hook database extension. Currently: "1.0".
+ * login_hook.is_executing_login_hook() true if the login_hook.login() function
+ * is currently executing under control of the login_hook logic. Thus the 
+ * login() function can check if it is invoked as part of the login process or
+ * if the user is trying to run it again some later time. 
  */
 create or replace function login_hook.is_executing_login_hook()
     returns boolean 
@@ -34,8 +36,8 @@ comment on function login_hook.is_executing_login_hook() is
 grant execute on function login_hook.is_executing_login_hook() to public;
 
 /*
- * login_hook.get_login_hook_version() just returns the current version
- * of the login_hook database extension. Currently: "1.0".
+ * login_hook.get_login_hook_version() just returns the current code version
+ * of the login_hook database extension.
  */
 create or replace function login_hook.get_login_hook_version()
     returns text 

@@ -38,7 +38,7 @@ session_preload_libraries = 'login_hook'
  
 Restart the database to activate the setting.
  
-Then logon to then database and execute:
+Then logon to the database and execute:
  
 ```SQL
 create extension login_hook;
