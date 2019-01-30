@@ -65,6 +65,12 @@ select currval('login_hook.invocation_count');
 select login_hook.login();
 ERROR:  The login_hook.login() function should only be invoked by the login_hook code
 CONTEXT:  PL/pgSQL function login_hook.login() line 5 at RAISE
+select login_hook.get_login_hook_version();
+ get_login_hook_version 
+------------------------
+ 1.0.5
+(1 row)
+
 -- cleanup
 drop function login_hook.login();
 drop sequence login_hook.invocation_count;

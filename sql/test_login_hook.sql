@@ -52,6 +52,8 @@ select currval('login_hook.invocation_count');
 -- Verify that  the login_hook.login() function can only be invoked as part of the login code
 select login_hook.login();
 
+select login_hook.get_login_hook_version();
+
 -- cleanup
 drop function login_hook.login();
 drop sequence login_hook.invocation_count;
