@@ -43,8 +43,8 @@ set parallel_setup_cost=0;
 set parallel_tuple_cost=0;
 set min_parallel_table_scan_size=0;
 set max_parallel_workers_per_gather=4;
-explain (costs off) select * from pg_proc where not proisagg and pg_get_functiondef(oid) = 'nonexisting function';
-select * from pg_proc where not proisagg and pg_get_functiondef(oid) = 'nonexisting function';
+explain (costs off) select pronamespace::regnamespace, proname from pg_proc where upper(prosrc) = 'nonexisting function';
+select pronamespace::regnamespace, proname from pg_proc where upper(prosrc) = 'nonexisting function';
 
 -- Verify that parallel workers didn't increment the invocation count
 select currval('login_hook.invocation_count');

@@ -40,18 +40,18 @@ set parallel_setup_cost=0;
 set parallel_tuple_cost=0;
 set min_parallel_table_scan_size=0;
 set max_parallel_workers_per_gather=4;
-explain (costs off) select * from pg_proc where not proisagg and pg_get_functiondef(oid) = 'nonexisting function';
-                                          QUERY PLAN                                           
------------------------------------------------------------------------------------------------
+explain (costs off) select pronamespace::regnamespace, proname from pg_proc where upper(prosrc) = 'nonexisting function';
+                           QUERY PLAN                           
+----------------------------------------------------------------
  Gather
    Workers Planned: 4
    ->  Parallel Seq Scan on pg_proc
-         Filter: ((NOT proisagg) AND (pg_get_functiondef(oid) = 'nonexisting function'::text))
+         Filter: (upper(prosrc) = 'nonexisting function'::text)
 (4 rows)
 
-select * from pg_proc where not proisagg and pg_get_functiondef(oid) = 'nonexisting function';
- proname | pronamespace | proowner | prolang | procost | prorows | provariadic | protransform | proisagg | proiswindow | prosecdef | proleakproof | proisstrict | proretset | provolatile | proparallel | pronargs | pronargdefaults | prorettype | proargtypes | proallargtypes | proargmodes | proargnames | proargdefaults | protrftypes | prosrc | probin | proconfig | proacl 
----------+--------------+----------+---------+---------+---------+-------------+--------------+----------+-------------+-----------+--------------+-------------+-----------+-------------+-------------+----------+-----------------+------------+-------------+----------------+-------------+-------------+----------------+-------------+--------+--------+-----------+--------
+select pronamespace::regnamespace, proname from pg_proc where upper(prosrc) = 'nonexisting function';
+ pronamespace | proname 
+--------------+---------
 (0 rows)
 
 -- Verify that parallel workers didn't increment the invocation count
