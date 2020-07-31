@@ -32,7 +32,7 @@
 PG_MODULE_MAGIC;
 #endif
 
-static char* version = "1.0.5";
+static char* version = "1.0.6";
 
 static bool isExecutingLogin = false;
 
@@ -106,36 +106,48 @@ void _PG_init(void)
 	}
 
 	dbName = get_database_name(MyDatabaseId);
-
+	Assert(dbName); // warning: only active if kernel compiled with --enable-cassert
+	
 	/*
 	 * See if schema 'login_hook' exists in this database. If it doesn't, we're
 	 * done.
 	 */
-	loginHookNamespaceOid = get_namespace_oid("login_hook", true);
+	loginHookNamespaceOid = get_namespace_oid("login_hook", true); // Do not generate error if schema does not exit (mising_ok = true)
 	if (OidIsValid(loginHookNamespaceOid))
 	{
 		/*
 		 * Check if a no-argument function called "login" exists in namespace
 		 * "login_hook"
 		 */
-		oidvector* emptyArgVector = buildoidvector(NULL, 0);
 		if (SearchSysCacheExists3(PROCNAMEARGSNSP, CStringGetDatum("login"),
 				PointerGetDatum(buildoidvector(NULL, 0)),
 				ObjectIdGetDatum(loginHookNamespaceOid)))
 		{
 
-			SPI_connect();
+			SPI_connect(); // TODO: do we have to test return code or protect this code section ?
 
 			elog(DEBUG3,
 					"login_hook will execute select login_hook.login() in database %s",
 					dbName);
 			isExecutingLogin = true;
-			SPI_execute("select login_hook.login()", false, 1);
-			isExecutingLogin = false;
-			elog(DEBUG3,
-					"login_hook is back from select login_hook.login() in database %s",
-					dbName);
-
+			// if ones gets error in SPI_execute(), the function does not return, unless protected by a PG_TRY / PG_CATCH
+			PG_TRY();
+			{
+				SPI_execute("select login_hook.login()", false, 1);
+				elog(DEBUG3,
+						"login_hook is back from select login_hook.login() in database %s",
+						dbName);
+			}
+			PG_CATCH();
+			{
+				elog(WARNING,
+						"Function login_hook.login() returned with error in database %s",
+						dbName);
+				AbortCurrentTransaction();
+				startedATransaction = false;
+			}
+			PG_END_TRY();
+				
 			SPI_finish();
 		}
 		else
@@ -145,7 +157,6 @@ void _PG_init(void)
 					dbName);
 		}
 
-		pfree(emptyArgVector);
 	}
 	else
 	{
