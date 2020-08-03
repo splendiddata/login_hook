@@ -68,9 +68,21 @@ CONTEXT:  PL/pgSQL function login_hook.login() line 5 at RAISE
 select login_hook.get_login_hook_version();
  get_login_hook_version 
 ------------------------
- 1.0.5
+ 1.0.7
 (1 row)
 
+/*
+ * Test that if the login() function fails, the superuser can still login
+ */
+create or replace function login_hook.login() returns void language plpgsql as $$
+BEGIN
+	RAISE EXCEPTION 'The login_hook.login() function now intentionally fails';
+END 
+$$;
+\c contrib_regression
+WARNING:  Function login_hook.login() returned with error in database contrib_regression.
+Please resolve the error as only superusers can login now.
+HINT:  original message = The login_hook.login() function now intentionally fails
 -- cleanup
 drop function login_hook.login();
 drop sequence login_hook.invocation_count;

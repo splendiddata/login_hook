@@ -3,7 +3,7 @@ Postgres database extension to execute som code on user login, comparable to
 Oracle's after logon trigger.
 
 ## Postgres versions
-The login_hook database extension works well in Posgres versions 10 and 11. 
+The login_hook database extension works well in Posgres versions 10, 11, 12 and 13. 
 
 It works as well in Postgres versions 9.5 and 9.6, but the regression tests will
 fail because parallel settings are different in 9.6 and don't even exist in 9.5.
@@ -12,7 +12,7 @@ Older versions haven't been tested.
 
 ## Installation
 First you'll need to compile the database extension (Check the
-[Postgres manual](https://www.postgresql.org/docs/10/static/extend-pgxs.html) 
+[Postgres manual](https://www.postgresql.org/docs/current/static/extend-pgxs.html) 
 for more information):<br>
  - Make sure pg_config points to the right places<br>
  - execute: make<br>
@@ -86,7 +86,11 @@ GRANT EXECUTE ON FUNCTION login_hook.login() TO PUBLIC;
 ```
 #### Remarks:
 the public execute permission is absolutely necessary because the function will
-be invoked for every body/thing that logs in to the database.
+be invoked for every body/thing that logs in to the database. In fact the function
+will be executed every time that a new process starts on behalf of a user session,
+so also if you are for example logged in with psql and use \c to reconnect. And 
+also sessions started by dblink or fdw will trigger exection ofn the login()
+function.
 
 Having public access granted to everybody might tempt people to execute the
 login_hook.login() function at any time. But of course it is intended to run
@@ -95,7 +99,12 @@ to check if the function is invoked under the control of the login_hook code.
 
 Make sure that all exceptions that occur in the login\_hook.login() function
 are properly dealt with because otherwise logging in to the database might
-prove challenging.
+prove challenging. Superusers will get a warning, but are still allowed to
+log in to be able to correct the function. Normal users will be logged out
+immediately when the login() function fails.
+
+The "make installcheck" will only pass if "session_preload_libraries = 'login_hook'"
+is added to the postgresql.conf file
 ## Functions
 **login_hook.is_executing_login_hook() returns boolean**
 

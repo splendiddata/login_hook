@@ -32,7 +32,7 @@
 PG_MODULE_MAGIC;
 #endif
 
-static char* version = "1.0.6";
+static char* version = "1.0.7";
 
 static bool isExecutingLogin = false;
 
@@ -137,14 +137,30 @@ void _PG_init(void)
 				elog(DEBUG3,
 						"login_hook is back from select login_hook.login() in database %s",
 						dbName);
+				// Make sure function login_hook.is_executing_login_hook() will return false ever after
+			    isExecutingLogin = false;
 			}
 			PG_CATCH();
 			{
-				elog(WARNING,
-						"Function login_hook.login() returned with error in database %s",
-						dbName);
+				// Make sure function login_hook.is_executing_login_hook() will return false ever after
+			    isExecutingLogin = false;
 				AbortCurrentTransaction();
 				startedATransaction = false;
+				if (superuser())
+                {
+                    ErrorData *edata = CopyErrorData();
+                    ereport(WARNING,
+                            ( errcode(edata->sqlerrcode)
+                            , errmsg( "Function login_hook.login() returned with error in database %s.\nPlease resolve the error as only superusers can login now."
+                                    , dbName)
+                            , errhint("original message = %s", edata->message)));
+                }
+                else
+				{
+					elog(ERROR,
+							"Function login_hook.login() returned with error in database %s, only a superuser can login",
+							dbName);
+				}
 			}
 			PG_END_TRY();
 				

@@ -54,6 +54,15 @@ select login_hook.login();
 
 select login_hook.get_login_hook_version();
 
+/*
+ * Test that if the login() function fails, the superuser can still login
+ */
+create or replace function login_hook.login() returns void language plpgsql as $$
+BEGIN
+	RAISE EXCEPTION 'The login_hook.login() function now intentionally fails';
+END 
+$$;
+\c contrib_regression
 -- cleanup
 drop function login_hook.login();
 drop sequence login_hook.invocation_count;
