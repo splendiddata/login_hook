@@ -15,8 +15,7 @@
 
 comment = 'login_hook - hook to execute login_hook.login() at login time'
 encoding = 'UTF-8'
-default_version = '1.0'
+default_version = '1.1'
 superuser = true
 relocatable = false
 schema = 'login_hook'
-module_pathname = '$libdir/login_hook.so'

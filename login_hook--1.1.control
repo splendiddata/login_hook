@@ -13,5 +13,5 @@
 # this program.  If not, Client should obtain one via www.gnu.org/licenses/.
 #
 
-comment = 'login_hook version 1.0'
-module_pathname = '$libdir/login_hook.so'
+comment = 'login_hook version 1.1'
+module_pathname = '$libdir/login_hook'

@@ -16,7 +16,7 @@
 MODULE_big = login_hook
 OBJS = login_hook.o
 EXTENSION = login_hook
-DATA = login_hook--1.0.sql
+DATA = login_hook--1.0.sql login_hook--1.0--1.1.sql login_hook--1.1.sql 
 DOCS = login_hook.html login_hook.css
 PG_CONFIG = pg_config
 REGRESS = test_login_hook

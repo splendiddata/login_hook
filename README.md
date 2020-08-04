@@ -89,7 +89,7 @@ the public execute permission is absolutely necessary because the function will
 be invoked for every body/thing that logs in to the database. In fact the function
 will be executed every time that a new process starts on behalf of a user session,
 so also if you are for example logged in with psql and use \c to reconnect. And 
-also sessions started by dblink or fdw will trigger execution ofn the login()
+also sessions started by dblink or fdw will trigger execution of the login()
 function.
 
 Having public access granted to everybody might tempt people to execute the
