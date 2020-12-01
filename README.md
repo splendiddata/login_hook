@@ -105,6 +105,8 @@ immediately when the login() function fails.
 
 The "make installcheck" will only pass if "session_preload_libraries = 'login_hook'"
 is added to the postgresql.conf file
+
+BEWARE! there appears to be a problem with EDB databases. See issue <a href="https://github.com/splendiddata/login_hook/issues/5">#5</a>.
 ## Functions
 **login_hook.is_executing_login_hook() returns boolean**
 
