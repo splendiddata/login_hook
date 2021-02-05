@@ -71,8 +71,8 @@ void _PG_init(void)
 	int startedATransaction = 0;
 
 	elog(DEBUG3,
-			"_PG_init() in login_hook.so, MyProcPid=%d, MyDatabaseId=%d, IsBackgroundWorker=%d, isExecutingLogin=%d",
-			MyProcPid, MyDatabaseId, IsBackgroundWorker, isExecutingLogin);
+	     "_PG_init() in login_hook.so, MyProcPid=%d, MyDatabaseId=%d, IsBackgroundWorker=%d, isExecutingLogin=%d",
+	     MyProcPid, MyDatabaseId, IsBackgroundWorker, isExecutingLogin);
 
 	/*
 	 * When _PG_init invokes the login() function, _PG_init processing is not
@@ -80,9 +80,10 @@ void _PG_init(void)
 	 * it is supposed to do - then shared library loading code is executed
 	 * again, including the invocation of this _PG_init function.
 	 */
-	if (isExecutingLogin) {
+	if (isExecutingLogin)
+	{
 		elog(DEBUG3, "nested invocation of login_hook._PG_INIT");
-				return;
+		return;
 	}
 
 	/*
@@ -92,7 +93,7 @@ void _PG_init(void)
 	if (IsBackgroundWorker)
 	{
 		elog(DEBUG1,
-				"login_hook did not do anything because we are in a background worker");
+		     "login_hook did not do anything because we are in a background worker");
 		return;
 	}
 
@@ -119,47 +120,48 @@ void _PG_init(void)
 		 * Check if a no-argument function called "login" exists in namespace
 		 * "login_hook"
 		 */
-		if (SearchSysCacheExists3(PROCNAMEARGSNSP, CStringGetDatum("login"),
-				PointerGetDatum(buildoidvector(NULL, 0)),
-				ObjectIdGetDatum(loginHookNamespaceOid)))
+		if (SearchSysCacheExists3(PROCNAMEARGSNSP,
+		                          CStringGetDatum("login"),
+		                          PointerGetDatum(buildoidvector(NULL, 0)),
+		                          ObjectIdGetDatum(loginHookNamespaceOid)))
 		{
 
 			SPI_connect(); // TODO: do we have to test return code or protect this code section ?
 
 			elog(DEBUG3,
-					"login_hook will execute select login_hook.login() in database %s",
-					dbName);
+			     "login_hook will execute select login_hook.login() in database %s",
+			     dbName);
 			isExecutingLogin = true;
 			// if ones gets error in SPI_execute(), the function does not return, unless protected by a PG_TRY / PG_CATCH
 			PG_TRY();
 			{
 				SPI_execute("select login_hook.login()", false, 1);
 				elog(DEBUG3,
-						"login_hook is back from select login_hook.login() in database %s",
-						dbName);
+				     "login_hook is back from select login_hook.login() in database %s",
+				     dbName);
 				// Make sure function login_hook.is_executing_login_hook() will return false ever after
-			    isExecutingLogin = false;
+				isExecutingLogin = false;
 			}
 			PG_CATCH();
 			{
 				// Make sure function login_hook.is_executing_login_hook() will return false ever after
-			    isExecutingLogin = false;
+				isExecutingLogin = false;
 				AbortCurrentTransaction();
 				startedATransaction = false;
 				if (superuser())
-                {
-                    ErrorData *edata = CopyErrorData();
-                    ereport(WARNING,
-                            ( errcode(edata->sqlerrcode)
-                            , errmsg( "Function login_hook.login() returned with error in database %s.\nPlease resolve the error as only superusers can login now."
-                                    , dbName)
-                            , errhint("original message = %s", edata->message)));
-                }
-                else
+				{
+					ErrorData *edata = CopyErrorData();
+					ereport(WARNING,
+					        ( errcode(edata->sqlerrcode),
+					          errmsg("Function login_hook.login() returned with error in database %s.\nPlease resolve the error as only superusers can login now.",
+					                 dbName),
+					          errhint("original message = %s", edata->message)));
+				}
+				else
 				{
 					elog(ERROR,
-							"Function login_hook.login() returned with error in database %s, only a superuser can login",
-							dbName);
+					     "Function login_hook.login() returned with error in database %s, only a superuser can login",
+					     dbName);
 				}
 			}
 			PG_END_TRY();
@@ -169,16 +171,16 @@ void _PG_init(void)
 		else
 		{
 			elog(WARNING,
-					"Function login_hook.login() is not invoked because it does not exist in database %s",
-					dbName);
+			     "Function login_hook.login() is not invoked because it does not exist in database %s",
+			     dbName);
 		}
 
 	}
 	else
 	{
 		elog(DEBUG1,
-				"login_hook will not execute anything because schema login_hook does not exist in database %s",
-				dbName);
+		     "login_hook will not execute anything because schema login_hook does not exist in database %s",
+		     dbName);
 	}
 
 	if (startedATransaction)
