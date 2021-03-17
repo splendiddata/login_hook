@@ -1,5 +1,5 @@
 # login_hook
-Postgres database extension to execute som code on user login, comparable to
+Postgres database extension to execute some code on user login, comparable to
 Oracle's after logon trigger.
 
 ## Postgres versions
