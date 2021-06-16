@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2013
+ * Copyright (c) Splendid Data Product Development B.V. 2013 - 2021
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -32,7 +32,7 @@
 PG_MODULE_MAGIC;
 #endif
 
-static char* version = "1.1";
+static char* version = "1.2";
 
 static bool isExecutingLogin = false;
 
@@ -73,6 +73,16 @@ void _PG_init(void)
 	elog(DEBUG3,
 	     "_PG_init() in login_hook.so, MyProcPid=%d, MyDatabaseId=%d, IsBackgroundWorker=%d, isExecutingLogin=%d",
 	     MyProcPid, MyDatabaseId, IsBackgroundWorker, isExecutingLogin);
+
+	/*
+	 * If no database is selected, then it makes no sense trying to execute
+	 * login code.
+	 * This may occur for example in a replication target database.
+	 */
+	if (!OidIsValid(MyDatabaseId)) {
+	    elog(DEBUG1, "No database selected so login_hook will not execute");
+	    return;
+	}
 
 	/*
 	 * When _PG_init invokes the login() function, _PG_init processing is not
