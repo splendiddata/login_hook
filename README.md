@@ -3,7 +3,8 @@ Postgres database extension to execute some code on user login, comparable to
 Oracle's after logon trigger.
 
 ## Postgres versions
-The login_hook database extension works well in Posgres versions 10, 11, 12, 13 and 14. 
+The login_hook database extension works well in Posgres versions 10, 11, 12 and 13.
+Postgres version 14beta1 works fine. But with Postgres version 14beta2 there is a problem. See https://github.com/splendiddata/login_hook/issues/12.
 
 It works as well in Postgres versions 9.5 and 9.6, but the regression tests will
 fail because parallel settings are different in 9.6 and don't even exist in 9.5.
