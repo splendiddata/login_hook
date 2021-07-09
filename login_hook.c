@@ -21,6 +21,8 @@
 #include "access/xact.h"
 #include "access/transam.h"
 #include "catalog/namespace.h"
+#include "executor/spi.h"
+#include "utils/snapmgr.h"
 #include "utils/syscache.h"
 #include "utils/builtins.h"
 #if PG_VERSION_NUM >= 110000
@@ -113,6 +115,7 @@ void _PG_init(void)
          * If we're not in a transaction, start one.
          */
         StartTransactionCommand();
+        PushActiveSnapshot(GetTransactionSnapshot());
         startedATransaction = 1;
     }
 
@@ -199,6 +202,7 @@ void _PG_init(void)
 		/*
 		 * commit the transaction we started
 		 */
+	    PopActiveSnapshot();
 		CommitTransactionCommand();
 	}
 }
