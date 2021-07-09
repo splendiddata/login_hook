@@ -68,7 +68,7 @@ CONTEXT:  PL/pgSQL function login_hook.login() line 5 at RAISE
 select login_hook.get_login_hook_version();
  get_login_hook_version 
 ------------------------
- 1.2
+ 1.3
 (1 row)
 
 /*
