@@ -9,10 +9,13 @@ It works as well in Postgres versions 9.5 and 9.6, but the regression tests will
 fail because parallel settings are different in 9.6 and don't even exist in 9.5.
 
 Older versions haven't been tested.
-<h2 style="color:red">Warning:</h2>
-With Postgres 15beta3 the following (or similar) error occurs:<p>
-``psql: error: connection to server on socket "/tmp/.s.PGSQL.5432" failed: FATAL:  StartTransactionCommand: unexpected state STARTED``<p>
-Apparently transaction management has changed between 15beta2 and 15beta3. Under investigation.
+
+**:warning: Warning:**<br>
+With Postgres 15beta3 the following (or similar) error occurs:
+
+>psql: error: connection to server on socket "/tmp/.s.PGSQL.5432" failed: FATAL:  StartTransactionCommand: unexpected state STARTED
+	
+Apparently transaction management has changed between Postgres versions 15beta2 and 15beta3.<br>Under investigation.
 
 ## Installation
 First you'll need to compile the database extension (Check the
