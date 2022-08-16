@@ -15,7 +15,6 @@
  * this program.  If not, Client should obtain one via www.gnu.org/licenses/.
  */
 
-create schema if not exists login_hook;
 comment on schema login_hook is 'Belongs to the login_hook extension';
 grant usage on schema login_hook to public;
 
