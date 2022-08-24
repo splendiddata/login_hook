@@ -3,19 +3,12 @@ Postgres database extension to execute some code on user login, comparable to
 Oracle's after logon trigger.
 
 ## Postgres versions
-The login_hook database extension works well in Postgres versions 10, 11, 12, 13, 14 and 15beta2.
+The login_hook database extension works well in Postgres versions 10, 11, 12, 13, 14 and 15beta3 (not anymore in 15beta1 and 15beta5).
 
 It works as well in Postgres versions 9.5 and 9.6, but the regression tests will
 fail because parallel settings are different in 9.6 and don't even exist in 9.5.
 
 Older versions haven't been tested.
-
-**:warning: Warning:**<br>
-With Postgres 15beta3 the following (or similar) error occurs:
-
->psql: error: connection to server on socket "/tmp/.s.PGSQL.5432" failed: FATAL:  StartTransactionCommand: unexpected state STARTED
-	
-Apparently transaction management has changed between Postgres versions 15beta2 and 15beta3.<br>Under investigation.
 
 ## Installation
 First you'll need to compile the database extension (Check the

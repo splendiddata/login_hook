@@ -13,9 +13,5 @@
 # this program.  If not, Client should obtain one via www.gnu.org/licenses/.
 #
 
-comment = 'login_hook - hook to execute login_hook.login() at login time'
-encoding = 'UTF-8'
-default_version = '1.4'
-superuser = true
-relocatable = false
-schema = 'login_hook'
+comment = 'login_hook version 1.4'
+module_pathname = '$libdir/login_hook'

@@ -33,7 +33,7 @@
 PG_MODULE_MAGIC;
 #endif
 
-static char* version = "1.3";
+static char* version = "1.4";
 
 static bool isExecutingLogin = false;
 
@@ -109,15 +109,33 @@ void _PG_init(void)
 		return;
 	}
 
+#if PG_VERSION_NUM < 150000
+	/*
+	 * Since Postgres version 15beta3 we are already in a transaction here. But older
+	 * versions will need to start one here.
+	 */
     if (GetCurrentTransactionIdIfAny() == InvalidTransactionId)
     {
         /*
          * If we're not in a transaction, start one.
          */
+
+        elog(DEBUG3,
+             "login_hook is starting a transaction");
         StartTransactionCommand();
         PushActiveSnapshot(GetTransactionSnapshot());
         startedATransaction = 1;
+    } else {
+        elog(DEBUG3,
+                     "login_hook did not start a transaction as one is already in progress");
     }
+#else
+    elog(DEBUG3,
+                         "login_hook started a subtransaction");
+    BeginInternalSubTransaction("login_hook");
+    PushActiveSnapshot(GetTransactionSnapshot());
+    startedATransaction = 1;
+#endif
 
     dbName = get_database_name(MyDatabaseId);
     Assert(dbName); // warning: only active if kernel compiled with --enable-cassert
@@ -162,9 +180,13 @@ void _PG_init(void)
             {
                 // Make sure function login_hook.is_executing_login_hook() will return false ever after
                 isExecutingLogin = false;
-
+#if PG_VERSION_NUM < 150000
                 AbortCurrentTransaction();
                 startedATransaction = false;
+#else
+                RollbackAndReleaseCurrentSubTransaction();
+                startedATransaction = false;
+#endif
                 if (superuser())
                 {
                     ErrorData *edata = CopyErrorData();
@@ -197,6 +219,7 @@ void _PG_init(void)
 		     dbName);
 	}
 
+#if PG_VERSION_NUM < 150000
 	if (startedATransaction)
 	{
 		/*
@@ -205,4 +228,12 @@ void _PG_init(void)
 	    PopActiveSnapshot();
 		CommitTransactionCommand();
 	}
+#else
+    if (startedATransaction)
+    {
+        PopActiveSnapshot();
+        ReleaseCurrentSubTransaction();
+    }
+#endif
+
 }
