@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2013
+ * Copyright (c) Splendid Data Product Development B.V. 2013 - 2022
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -24,7 +24,7 @@ grant usage on schema login_hook to public;
  * login() function can check if it is invoked as part of the login process or
  * if the user is trying to run it again some later time. 
  */
-create or replace function login_hook.is_executing_login_hook()
+create function login_hook.is_executing_login_hook()
     returns boolean 
     leakproof
     language C
@@ -38,7 +38,7 @@ grant execute on function login_hook.is_executing_login_hook() to public;
  * login_hook.get_login_hook_version() just returns the current code version
  * of the login_hook database extension.
  */
-create or replace function login_hook.get_login_hook_version()
+create function login_hook.get_login_hook_version()
     returns text 
     immutable leakproof
     as 'login_hook.so', 'get_login_hook_version'
