@@ -43,7 +43,7 @@ static bool isExecutingLogin = false;
  * This function returns the current version of this database extension
  */
 PG_FUNCTION_INFO_V1(get_login_hook_version);
-Datum get_login_hook_version( PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum get_login_hook_version( PG_FUNCTION_ARGS)
 {
 	Datum pg_versioning_version = (Datum) palloc(VARHDRSZ + strlen(version));
 	SET_VARSIZE(pg_versioning_version, VARHDRSZ + strlen(version));
@@ -58,7 +58,7 @@ Datum get_login_hook_version( PG_FUNCTION_ARGS)
  * under control of the login_hook code.
  */
 PG_FUNCTION_INFO_V1(is_executing_login_hook);
-Datum is_executing_login_hook( PG_FUNCTION_ARGS)
+PGDLLEXPORT Datum is_executing_login_hook( PG_FUNCTION_ARGS)
 {
 	PG_RETURN_BOOL(isExecutingLogin);
 }
