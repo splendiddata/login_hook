@@ -19,6 +19,7 @@
 #include "miscadmin.h"
 #include "commands/dbcommands.h"
 #include "access/xact.h"
+#include "access/xlog.h"
 #include "access/transam.h"
 #include "catalog/namespace.h"
 #include "executor/spi.h"
@@ -33,7 +34,7 @@
 PG_MODULE_MAGIC;
 #endif
 
-static char* version = "1.4";
+static char* version = "1.5";
 
 static bool isExecutingLogin = false;
 
@@ -45,10 +46,10 @@ static bool isExecutingLogin = false;
 PG_FUNCTION_INFO_V1(get_login_hook_version);
 PGDLLEXPORT Datum get_login_hook_version( PG_FUNCTION_ARGS)
 {
-	Datum pg_versioning_version = (Datum) palloc(VARHDRSZ + strlen(version));
-	SET_VARSIZE(pg_versioning_version, VARHDRSZ + strlen(version));
-	memcpy(VARDATA(pg_versioning_version), version, strlen(version));
-	PG_RETURN_DATUM(pg_versioning_version);
+	Datum login_hook_version = (Datum) palloc(VARHDRSZ + strlen(version));
+	SET_VARSIZE(login_hook_version, VARHDRSZ + strlen(version));
+	memcpy(VARDATA(login_hook_version), version, strlen(version));
+	PG_RETURN_DATUM(login_hook_version);
 }
 
 /*
@@ -73,8 +74,8 @@ void _PG_init(void)
 	Oid loginFuncOid;
 
 	elog(DEBUG3,
-	     "_PG_init() in login_hook.so, MyProcPid=%d, MyDatabaseId=%d, IsBackgroundWorker=%d, isExecutingLogin=%d",
-	     MyProcPid, MyDatabaseId, IsBackgroundWorker, isExecutingLogin);
+	     "_PG_init() in login_hook.so, MyProcPid=%d, MyDatabaseId=%d, IsBackgroundWorker=%d, isExecutingLogin=%d, login_hook version=%s",
+	     MyProcPid, MyDatabaseId, IsBackgroundWorker, isExecutingLogin, version);
 
 	/*
 	 * If no database is selected, then it makes no sense trying to execute
@@ -109,6 +110,17 @@ void _PG_init(void)
 		return;
 	}
 
+	/*
+	 * The login() function should only be executed on a primary server.
+	 * If recovery is in progress, we are probably on a secondary server.
+	 */
+	if (RecoveryInProgress())
+	{
+		elog(DEBUG1,
+		     "login_hook did not do anything because recovery is in progress. This is probably not the primary server.");
+		return;
+	}
+
 #if PG_VERSION_NUM < 150000
 	/*
 	 * Since Postgres version 15beta3 we are already in a transaction here. But older
@@ -139,7 +151,7 @@ void _PG_init(void)
 
     dbName = get_database_name(MyDatabaseId);
     Assert(dbName); // warning: only active if kernel compiled with --enable-cassert
-	
+
 	/*
 	 * See if schema 'login_hook' exists in this database. If it doesn't, we're
 	 * done.

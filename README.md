@@ -3,11 +3,11 @@ Postgres database extension to execute some code on user login, comparable to
 Oracle's after logon trigger.
 
 ## Postgres versions
-The login_hook database extension works well in Postgres versions 11, 12, 13, 14 and 15.
+The login_hook database extension works well in Postgres versions 11, 12, 13, 14, 15 and 16.
 
 ## Installation
 First you'll need to compile the database extension (Check the
-[Postgres manual](https://www.postgresql.org/docs/current/static/extend-pgxs.html) 
+[Postgres manual](https://www.postgresql.org/docs/current/static/extend-pgxs.html)
 for more information):<br>
  - Make sure pg_config points to the right places<br>
  - execute: make<br>
@@ -30,11 +30,11 @@ library to the session\_preload\_libraries setting. For example:
 #
 session_preload_libraries = 'login_hook'
 ```
- 
+
 Restart the database to activate the setting.
- 
+
 Then logon to the database and execute:
- 
+
 ```SQL
 create extension login_hook;
 ```
@@ -55,9 +55,9 @@ BEGIN
 	THEN
 	    RAISE EXCEPTION 'The login_hook.login() function should only be invoked by the login_hook code';
 	END IF;
-	
+
 	BEGIN
-	   -- 
+	   --
 	   -- Do whatever you need to do at login here.
 	   -- For example:
 	   RAISE NOTICE 'Hello %', current_user;
@@ -74,8 +74,8 @@ BEGIN
 	               , ex_detail
 	               , ex_hint
 	               , ex_context;
-    END	;       
-END 
+    END	;
+END
 $$;
 GRANT EXECUTE ON FUNCTION login_hook.login() TO PUBLIC;
 ```
@@ -83,7 +83,7 @@ GRANT EXECUTE ON FUNCTION login_hook.login() TO PUBLIC;
 the public execute permission is absolutely necessary because the function will
 be invoked for every body/thing that logs in to the database. In fact the function
 will be executed every time that a new process starts on behalf of a user session,
-so also if you are for example logged in with psql and use \c to reconnect. And 
+so also if you are for example logged in with psql and use \c to reconnect. And
 also sessions started by dblink or fdw will trigger execution of the login()
 function.
 
@@ -98,6 +98,10 @@ prove challenging. Superusers will get a warning, but are still allowed to
 log in to be able to correct the function. Normal users will be logged out
 immediately when the login() function fails.
 
+The login\_hook.login() function will not be invoked:
+* in a background processes
+* when the database is in recovery mode (replication backup server)
+
 The "make installcheck" will only pass if "session_preload_libraries = 'login_hook'"
 is added to the postgresql.conf file
 
@@ -105,14 +109,14 @@ BEWARE! there appears to be a problem with EDB databases. See issue <a href="htt
 ## Functions
 **login_hook.is_executing_login_hook() returns boolean**
 
-    returns true when the login_hook.login() function is invoked under 
+    returns true when the login_hook.login() function is invoked under
     control of the login_hook code. When invoked during a normal
     session, it will always return false.
-    
+
 **login_hook.get_login_hook_version() returns text**
 
     returns the compiled version of the login_hook software.
-    
+
 **login_hook.login() returns void**
 
-    To be provided by you! 
+    To be provided by you!

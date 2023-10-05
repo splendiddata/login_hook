@@ -1,4 +1,4 @@
-# Copyright (c) Splendid Data Product Development B.V. 2013 - 2022
+# Copyright (c) Splendid Data Product Development B.V. 2013 - 2023
 # 
 # This program is free software: You may redistribute and/or modify under the 
 # terms of the GNU General Public License as published by the Free Software 
@@ -20,7 +20,8 @@ DATA = login_hook--1.0.sql\
        login_hook--1.0--1.1.sql login_hook--1.1.sql\
        login_hook--1.1--1.2.sql login_hook--1.2.sql\
        login_hook--1.2--1.3.sql login_hook--1.3.sql\
-       login_hook--1.3--1.4.sql login_hook--1.4.sql 
+       login_hook--1.3--1.4.sql login_hook--1.4.sql\
+       login_hook--1.4--1.5.sql login_hook--1.5.sql 
 DOCS = login_hook.html login_hook.css
 PG_CONFIG = pg_config
 REGRESS = test_login_hook
