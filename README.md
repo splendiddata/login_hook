@@ -3,7 +3,14 @@ Postgres database extension to execute some code on user login, comparable to
 Oracle's after logon trigger.
 
 ## Postgres versions
-The login_hook database extension works well in Postgres versions 11, 12, 13, 14, 15 and 16.
+The login_hook database extension works well in Postgres versions 12, 13, 14, 15 and 16.
+
+Postgres version 17 (beta1 currently) works as well **BUT** please start using
+the login event trigger instead. For an example see
+[https://www.postgresql.org/docs/17/event-trigger-database-login-example.html](https://www.postgresql.org/docs/17/event-trigger-database-login-example.html).
+When a login event trigger is defined in the database, then the login_hook.login() function will no longer be executed.
+
+Maintenance of the login_hook will be discontinued in Postgres version 18.
 
 ## Installation
 First you'll need to compile the database extension (Check the

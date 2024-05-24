@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2013 - 2021
+ * Copyright (c) Splendid Data Product Development B.V. 2013 - 2024
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -30,11 +30,15 @@
 #include "catalog/pg_proc_d.h"
 #endif
 
+#if PG_VERSION_NUM < 170000
+#define AmBackgroundWorkerProcess() (IsBackgroundWorker)
+#endif
+
 #ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
 #endif
 
-static char* version = "1.5";
+static char* version = "1.6";
 
 static bool isExecutingLogin = false;
 
@@ -74,9 +78,15 @@ void _PG_init(void)
 	Oid loginFuncOid;
 
 	elog(DEBUG3,
-	     "_PG_init() in login_hook.so, MyProcPid=%d, MyDatabaseId=%d, IsBackgroundWorker=%d, isExecutingLogin=%d, login_hook version=%s",
-	     MyProcPid, MyDatabaseId, IsBackgroundWorker, isExecutingLogin, version);
+	     "_PG_init() in login_hook.so, MyProcPid=%d, MyDatabaseId=%d, AmBackgroundWorkerProcess()=%d, isExecutingLogin=%d, login_hook version=%s",
+	     MyProcPid, MyDatabaseId, AmBackgroundWorkerProcess(), isExecutingLogin, version);
 
+#if PG_VERSION_NUM >= 170000
+	if (MyDatabaseHasLoginEventTriggers) {
+	    elog(DEBUG1, "A login event trigger is present in this database, so login_hook will not execute");
+	    return;
+	}
+#endif
 	/*
 	 * If no database is selected, then it makes no sense trying to execute
 	 * login code.
@@ -103,7 +113,7 @@ void _PG_init(void)
 	 * Parallel workers have their own initialisation. The login() function
 	 * must not be invoked for them.
 	 */
-	if (IsBackgroundWorker)
+	if (AmBackgroundWorkerProcess())
 	{
 		elog(DEBUG1,
 		     "login_hook did not do anything because we are in a background worker");
@@ -171,6 +181,10 @@ void _PG_init(void)
                 ObjectIdGetDatum(loginHookNamespaceOid),
                 0);
 	    if (OidIsValid(loginFuncOid)) {
+#if PG_VERSION_NUM >= 170000
+			elog(WARNING,
+				 "Beware! Postgres17 is the last release for which the login_hook extension is maintained. Please use a login event trigger instead!");
+#endif
 
             // Make the function login_hook.is_executing_login_hook() return true now
             isExecutingLogin = true;
