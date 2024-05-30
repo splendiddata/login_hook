@@ -15,7 +15,7 @@
 
 comment = 'login_hook - hook to execute login_hook.login() at login time'
 encoding = 'UTF-8'
-default_version = '1.5'
+default_version = '1.6'
 superuser = true
 relocatable = false
 schema = 'login_hook'

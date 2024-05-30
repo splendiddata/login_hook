@@ -104,8 +104,7 @@ alter event trigger login_trigger disable;
 -- cleanup
 drop function login_hook.login();
 drop sequence login_hook.invocation_count;
+drop event trigger login_trigger;
+drop function login_hook.login_trigger();
 drop schema login_hook cascade;
-NOTICE:  drop cascades to 3 other objects
-DETAIL:  drop cascades to extension login_hook
-drop cascades to function login_hook.login_trigger()
-drop cascades to event trigger login_trigger
+NOTICE:  drop cascades to extension login_hook

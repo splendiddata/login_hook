@@ -81,4 +81,6 @@ alter event trigger login_trigger disable;
 -- cleanup
 drop function login_hook.login();
 drop sequence login_hook.invocation_count;
+drop event trigger login_trigger;
+drop function login_hook.login_trigger();
 drop schema login_hook cascade;
