@@ -26,9 +26,7 @@
 #include "utils/snapmgr.h"
 #include "utils/syscache.h"
 #include "utils/builtins.h"
-#if PG_VERSION_NUM >= 110000
 #include "catalog/pg_proc_d.h"
-#endif
 
 #if PG_VERSION_NUM < 170000
 #define AmBackgroundWorkerProcess() (IsBackgroundWorker)
@@ -38,7 +36,7 @@
 PG_MODULE_MAGIC;
 #endif
 
-static char* version = "1.6";
+static char* version = "1.7";
 
 static bool isExecutingLogin = false;
 
@@ -173,9 +171,7 @@ void _PG_init(void)
 	     * See if a function login_hook.login() exists.
 	     */
 	    loginFuncOid = GetSysCacheOid(PROCNAMEARGSNSP,
-#if PG_VERSION_NUM >= 120000
 	            Anum_pg_proc_oid,
-#endif
                 CStringGetDatum("login"),
                 PointerGetDatum(buildoidvector(NULL, 0)),
                 ObjectIdGetDatum(loginHookNamespaceOid),

@@ -1,4 +1,4 @@
-# Copyright (c) Splendid Data Product Development B.V. 2013 - 2023
+# Copyright (c) Splendid Data Product Development B.V. 2013 - 2025
 #
 # This program is free software: You may redistribute and/or modify under the
 # terms of the GNU General Public License as published by the Free Software
@@ -13,9 +13,5 @@
 # this program.  If not, Client should obtain one via www.gnu.org/licenses/.
 #
 
-comment = 'login_hook - hook to execute login_hook.login() at login time'
-encoding = 'UTF-8'
-default_version = '1.7'
-superuser = true
-relocatable = false
-schema = 'login_hook'
+comment = 'login_hook version 1.7'
+module_pathname = '$libdir/login_hook'
