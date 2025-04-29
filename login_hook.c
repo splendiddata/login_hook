@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2013 - 2024
+ * Copyright (c) Splendid Data Product Development B.V. 2013 - 2025
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -216,17 +216,32 @@ void _PG_init(void)
                 if (superuser())
                 {
                     ErrorData *edata = CopyErrorData();
+#if PG_VERSION_NUM < 150000
                     ereport(WARNING,
                             ( errcode(edata->sqlerrcode),
                               errmsg("Function login_hook.login() returned with error in database %s.\nPlease resolve the error as only superusers can login now.",
-                                     dbName),
+                            		  dbName),
                               errhint("original message = %s", edata->message)));
+#else
+                    ereport(WARNING,
+                            ( errcode(edata->sqlerrcode),
+                              errmsg("Function login_hook.login() returned with error in database %s.\nPlease resolve the error as only superusers can login now.",
+                            		  get_database_name(MyDatabaseId)),
+                              errhint("original message = %s", edata->message)));
+#endif
                 }
                 else
                 {
+                	dbName = get_database_name(MyDatabaseId);
+#if PG_VERSION_NUM < 150000
                     elog(ERROR,
                          "Function login_hook.login() returned with error in database %s, only a superuser can login",
                          dbName);
+#else
+                    elog(ERROR,
+                         "Function login_hook.login() returned with error in database %s, only a superuser can login",
+						 get_database_name(MyDatabaseId));
+#endif
                 }
             }
             PG_END_TRY();
