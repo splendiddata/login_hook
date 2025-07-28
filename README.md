@@ -10,7 +10,7 @@ the login event trigger instead. For an example see
 [https://www.postgresql.org/docs/17/event-trigger-database-login-example.html](https://www.postgresql.org/docs/17/event-trigger-database-login-example.html).
 To allow for a smooth migration to the Postgres native login even trigger: As soon as a login event trigger is defined in the database, the login_hook.login() function will no longer be executed. Later you can drop the login_hook extension and remove the login_hook.login() function.
 
-Maintenance of the login_hook will be discontinued in Postgres version 18.
+Maintenance of the login_hook will be discontinued after Postgres version 18.
 
 ## Installation
 First you'll need to compile the database extension (Check the
@@ -88,7 +88,7 @@ GRANT EXECUTE ON FUNCTION login_hook.login() TO PUBLIC;
 ```
 #### Remarks:
 the public execute permission is absolutely necessary because the function will
-be invoked for every body/thing that logs in to the database. In fact the function
+be invoked for everybody / everything that logs in to the database. In fact the function
 will be executed every time that a new process starts on behalf of a user session,
 so also if you are for example logged in with psql and use \c to reconnect. And
 also sessions started by dblink or fdw will trigger execution of the login()
@@ -109,10 +109,16 @@ The login\_hook.login() function will not be invoked:
 * in a background processes
 * when the database is in recovery mode (replication backup server)
 
+If you use the login_hook.login() function to alter the database, like for example creating a temp table, and if you are running with
+a hot standby setup, and if your clients are both connected to the primary server and the hot standby server(s) to make use of the
+auto failover feature, then you might want to install the [server_promotion_hook](https://github.com/splendiddata/server_promotion_hook)
+as well so the temp tables can be created when a hot standby server becomes primary.
+
 The "make installcheck" will only pass if "session_preload_libraries = 'login_hook'"
 is added to the postgresql.conf file
 
 BEWARE! there appears to be a problem with EDB databases. See issue <a href="https://github.com/splendiddata/login_hook/issues/5">#5</a>.
+
 ## Functions
 **login_hook.is_executing_login_hook() returns boolean**
 
