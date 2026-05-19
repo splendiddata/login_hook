@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Splendid Data Product Development B.V. 2013 - 2025
+ * Copyright (c) Splendid Data Product Development B.V. 2013 - 2026
  *
  * This program is free software: You may redistribute and/or modify under the
  * terms of the GNU General Public License as published by the Free Software
@@ -28,6 +28,10 @@
 #include "utils/builtins.h"
 #include "catalog/pg_proc_d.h"
 
+#if PG_VERSION_NUM >= 190000
+#include "utils/lsyscache.h"
+#endif
+
 #if PG_VERSION_NUM < 170000
 #define AmBackgroundWorkerProcess() (IsBackgroundWorker)
 #endif
@@ -49,8 +53,8 @@ PG_FUNCTION_INFO_V1(get_login_hook_version);
 PGDLLEXPORT Datum get_login_hook_version( PG_FUNCTION_ARGS)
 {
 	Datum login_hook_version = (Datum) palloc(VARHDRSZ + strlen(version));
-	SET_VARSIZE(login_hook_version, VARHDRSZ + strlen(version));
-	memcpy(VARDATA(login_hook_version), version, strlen(version));
+	SET_VARSIZE(DatumGetPointer(login_hook_version), VARHDRSZ + strlen(version));
+	memcpy(VARDATA(DatumGetPointer(login_hook_version)), version, strlen(version));
 	PG_RETURN_DATUM(login_hook_version);
 }
 
