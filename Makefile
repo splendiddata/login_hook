@@ -23,7 +23,8 @@ DATA = login_hook--1.0.sql\
        login_hook--1.3--1.4.sql login_hook--1.4.sql\
        login_hook--1.4--1.5.sql login_hook--1.5.sql\
        login_hook--1.5--1.6.sql login_hook--1.6.sql\
-       login_hook--1.6--1.7.sql login_hook--1.7.sql 
+       login_hook--1.6--1.7.sql login_hook--1.7.sql \
+       login_hook--1.7--1.8.sql login_hook--1.8.sql 
 DOCS = login_hook.html login_hook.css
 PG_CONFIG = pg_config
 REGRESS = test_login_hook-$(MAJORVERSION)

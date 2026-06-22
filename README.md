@@ -10,7 +10,7 @@ the login event trigger instead. For an example see
 [https://www.postgresql.org/docs/17/event-trigger-database-login-example.html](https://www.postgresql.org/docs/17/event-trigger-database-login-example.html).
 To allow for a smooth migration to the Postgres native login even trigger: As soon as a login event trigger is defined in the database, the login_hook.login() function will no longer be executed. Later you can drop the login_hook extension and remove the login_hook.login() function.
 
-Maintenance of the login_hook will be discontinued after Postgres version 18.
+Maintenance of the login_hook will be discontinued after Postgres version 19.
 
 ## Installation
 First you'll need to compile the database extension (Check the
