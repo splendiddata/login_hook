@@ -26,6 +26,7 @@
 #include "utils/snapmgr.h"
 #include "utils/syscache.h"
 #include "utils/builtins.h"
+#include "utils/memutils.h"
 #include "catalog/pg_proc_d.h"
 
 #if PG_VERSION_NUM >= 190000
@@ -204,45 +205,58 @@ void _PG_init(void)
             }
             PG_CATCH();
             {
+#if PG_VERSION_NUM < 150000
+                ErrorData *edata;
+                bool loginUserIsSuperuser;
+#endif
+
                 // Make sure function login_hook.is_executing_login_hook() will return false ever after
                 isExecutingLogin = false;
 #if PG_VERSION_NUM < 150000
+                /* Preserve the error and database name outside the transaction.
+                 * After aborting, its memory is gone and catalog lookups are
+                 * no longer safe. */
+                MemoryContextSwitchTo(TopMemoryContext);
+                edata = CopyErrorData();
+                dbName = pstrdup(dbName);
+                loginUserIsSuperuser = superuser();
+                FlushErrorState();
                 AbortCurrentTransaction();
                 startedATransaction = false;
-#else
-                RollbackAndReleaseCurrentSubTransaction();
-                startedATransaction = false;
-#endif
-                if (superuser())
-                {
-                    ErrorData *edata = CopyErrorData();
-#if PG_VERSION_NUM < 150000
+
+                if (loginUserIsSuperuser)
                     ereport(WARNING,
                             ( errcode(edata->sqlerrcode),
                               errmsg("Function login_hook.login() returned with error in database %s.\nPlease resolve the error as only superusers can login now.",
-                            		  dbName),
+                                     dbName),
                               errhint("original message = %s", edata->message)));
+                else
+                    elog(ERROR,
+                         "Function login_hook.login() returned with error in database %s, only a superuser can login",
+                         dbName);
+
+                FreeErrorData(edata);
+                pfree(dbName);
 #else
+                RollbackAndReleaseCurrentSubTransaction();
+                startedATransaction = false;
+                if (superuser())
+                {
+                    ErrorData *edata = CopyErrorData();
                     ereport(WARNING,
                             ( errcode(edata->sqlerrcode),
                               errmsg("Function login_hook.login() returned with error in database %s.\nPlease resolve the error as only superusers can login now.",
                             		  get_database_name(MyDatabaseId)),
                               errhint("original message = %s", edata->message)));
-#endif
                 }
                 else
                 {
                 	dbName = get_database_name(MyDatabaseId);
-#if PG_VERSION_NUM < 150000
-                    elog(ERROR,
-                         "Function login_hook.login() returned with error in database %s, only a superuser can login",
-                         dbName);
-#else
                     elog(ERROR,
                          "Function login_hook.login() returned with error in database %s, only a superuser can login",
 						 get_database_name(MyDatabaseId));
-#endif
                 }
+#endif
             }
             PG_END_TRY();
 	    }

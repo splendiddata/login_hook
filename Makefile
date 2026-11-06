@@ -28,6 +28,7 @@ DATA = login_hook--1.0.sql\
 DOCS = login_hook.html login_hook.css
 PG_CONFIG = pg_config
 REGRESS = test_login_hook-$(MAJORVERSION)
+TAP_TESTS = 1
 
 PGXS := $(shell $(PG_CONFIG) --pgxs)
 include $(PGXS)

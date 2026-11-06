@@ -117,6 +117,9 @@ as well so the temp tables can be created when a hot standby server becomes prim
 The "make installcheck" will only pass if "session_preload_libraries = 'login_hook'"
 is added to the postgresql.conf file
 
+The connection tests also use PostgreSQL's TAP test framework and start a temporary
+cluster. Run `make installcheck` as a non-root user with the TAP test prerequisites installed.
+
 BEWARE! there appears to be a problem with EDB databases. See issue <a href="https://github.com/splendiddata/login_hook/issues/5">#5</a>.
 
 ## Functions
