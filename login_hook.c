@@ -41,7 +41,7 @@
 PG_MODULE_MAGIC;
 #endif
 
-static char* version = "1.7";
+static char* version = "1.9";
 
 static bool isExecutingLogin = false;
 

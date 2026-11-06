@@ -1,0 +1,75 @@
+2026-11-06 17:51:26.835 CET [60862] LOG:  00000: starting PostgreSQL 14.24 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.3.1 20260722 (Red Hat 15.3.1-1), 64-bit
+2026-11-06 17:51:26.835 CET [60862] LOCATION:  PostmasterMain, postmaster.c:1141
+2026-11-06 17:51:26.835 CET [60862] LOG:  00000: listening on Unix socket "/home/mb/tmp/OCTVpf5h8v/.s.PGSQL.18530"
+2026-11-06 17:51:26.835 CET [60862] LOCATION:  StreamServerPort, pqcomm.c:573
+2026-11-06 17:51:26.837 CET [60863] LOG:  00000: database system was shut down at 2026-11-06 17:51:26 CET
+2026-11-06 17:51:26.837 CET [60863] LOCATION:  StartupXLOG, xlog.c:6580
+2026-11-06 17:51:26.838 CET [60862] LOG:  00000: database system is ready to accept connections
+2026-11-06 17:51:26.838 CET [60862] LOCATION:  reaper, postmaster.c:3098
+2026-11-06 17:51:26.930 CET [60871] 001_login_error.pl LOG:  00000: statement: CREATE DATABASE login_hook_dddddddddddddddddddddddddddddddddddddddddddddddddddd
+2026-11-06 17:51:26.930 CET [60871] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:26.954 CET [60873] 001_login_error.pl LOG:  00000: statement: CREATE EXTENSION login_hook;
+2026-11-06 17:51:26.954 CET [60873] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:26.956 CET [60873] 001_login_error.pl LOG:  00000: statement: CREATE ROLE login_hook_test_user LOGIN;
+2026-11-06 17:51:26.956 CET [60873] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:26.956 CET [60873] 001_login_error.pl LOG:  00000: statement: CREATE TABLE login_hook.attempts (username text);
+2026-11-06 17:51:26.956 CET [60873] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:26.957 CET [60873] 001_login_error.pl LOG:  00000: statement: GRANT INSERT, SELECT ON login_hook.attempts TO PUBLIC;
+2026-11-06 17:51:26.957 CET [60873] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:26.957 CET [60873] 001_login_error.pl LOG:  00000: statement: CREATE FUNCTION login_hook.login() RETURNS void LANGUAGE plpgsql AS $$
+	    BEGIN
+	        IF NOT login_hook.is_executing_login_hook() THEN
+	            RAISE EXCEPTION 'login hook is not marked as executing';
+	        END IF;
+	        INSERT INTO login_hook.attempts VALUES (current_user);
+	    END
+	    $$;
+2026-11-06 17:51:26.957 CET [60873] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:26.969 CET [60875] 001_login_error.pl LOG:  00000: statement: SELECT login_hook.is_executing_login_hook()
+2026-11-06 17:51:26.969 CET [60875] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:26.982 CET [60877] 001_login_error.pl LOG:  00000: statement: SELECT login_hook.is_executing_login_hook()
+2026-11-06 17:51:26.982 CET [60877] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:26.994 CET [60879] 001_login_error.pl LOG:  00000: statement: TRUNCATE login_hook.attempts;
+2026-11-06 17:51:26.994 CET [60879] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:26.996 CET [60879] 001_login_error.pl LOG:  00000: statement: CREATE OR REPLACE FUNCTION login_hook.login() RETURNS void LANGUAGE plpgsql AS $$
+	    BEGIN
+	        INSERT INTO login_hook.attempts VALUES (current_user);
+	        RAISE EXCEPTION USING
+	            ERRCODE = '22012', MESSAGE = 'login hook diagnostic marker';
+	    END
+	    $$;
+2026-11-06 17:51:26.996 CET [60879] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:27.006 CET [60881] 001_login_error.pl WARNING:  22012: Function login_hook.login() returned with error in database login_hook_dddddddddddddddddddddddddddddddddddddddddddddddddddd.
+	Please resolve the error as only superusers can login now.
+2026-11-06 17:51:27.006 CET [60881] 001_login_error.pl HINT:  original message = login hook diagnostic marker
+2026-11-06 17:51:27.006 CET [60881] 001_login_error.pl LOCATION:  _PG_init, login_hook.c:228
+2026-11-06 17:51:27.007 CET [60881] 001_login_error.pl LOG:  00000: statement: SELECT login_hook.is_executing_login_hook(), count(*) FROM login_hook.attempts
+2026-11-06 17:51:27.007 CET [60881] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:27.017 CET [60883] 001_login_error.pl FATAL:  XX000: Function login_hook.login() returned with error in database login_hook_dddddddddddddddddddddddddddddddddddddddddddddddddddd, only a superuser can login
+2026-11-06 17:51:27.017 CET [60883] 001_login_error.pl LOCATION:  _PG_init, login_hook.c:234
+2026-11-06 17:51:27.028 CET [60886] 001_login_error.pl LOG:  00000: statement: SELECT true
+2026-11-06 17:51:27.028 CET [60886] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:27.036 CET [60888] 001_login_error.pl WARNING:  22012: Function login_hook.login() returned with error in database login_hook_dddddddddddddddddddddddddddddddddddddddddddddddddddd.
+	Please resolve the error as only superusers can login now.
+2026-11-06 17:51:27.036 CET [60888] 001_login_error.pl HINT:  original message = login hook diagnostic marker
+2026-11-06 17:51:27.036 CET [60888] 001_login_error.pl LOCATION:  _PG_init, login_hook.c:228
+2026-11-06 17:51:27.037 CET [60888] 001_login_error.pl LOG:  00000: statement: CREATE OR REPLACE FUNCTION login_hook.login() RETURNS void LANGUAGE plpgsql AS $$
+	    BEGIN
+	        IF NOT login_hook.is_executing_login_hook() THEN
+	            RAISE EXCEPTION 'login hook is not marked as executing';
+	        END IF;
+	    END
+	    $$;
+2026-11-06 17:51:27.037 CET [60888] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:27.048 CET [60890] 001_login_error.pl LOG:  00000: statement: SELECT login_hook.is_executing_login_hook()
+2026-11-06 17:51:27.048 CET [60890] 001_login_error.pl LOCATION:  exec_simple_query, postgres.c:982
+2026-11-06 17:51:27.052 CET [60862] LOG:  00000: received fast shutdown request
+2026-11-06 17:51:27.052 CET [60862] LOCATION:  pmdie, postmaster.c:2883
+2026-11-06 17:51:27.052 CET [60862] LOG:  00000: aborting any active transactions
+2026-11-06 17:51:27.052 CET [60862] LOCATION:  pmdie, postmaster.c:2901
+2026-11-06 17:51:27.052 CET [60862] LOG:  00000: background worker "logical replication launcher" (PID 60869) exited with exit code 1
+2026-11-06 17:51:27.052 CET [60862] LOCATION:  LogChildExit, postmaster.c:3762
+2026-11-06 17:51:27.053 CET [60864] LOG:  00000: shutting down
+2026-11-06 17:51:27.053 CET [60864] LOCATION:  ShutdownXLOG, xlog.c:8870
+2026-11-06 17:51:27.058 CET [60862] LOG:  00000: database system is shut down
+2026-11-06 17:51:27.058 CET [60862] LOCATION:  UnlinkLockFiles, miscinit.c:1014

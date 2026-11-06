@@ -1,0 +1,71 @@
+# Checking port 18530
+# Found port 18530
+Name: login_error
+Data directory: /home/mb/ws/c/login_hook/tmp_check/t_001_login_error_login_error_data/pgdata
+Backup directory: /home/mb/ws/c/login_hook/tmp_check/t_001_login_error_login_error_data/backup
+Archive directory: /home/mb/ws/c/login_hook/tmp_check/t_001_login_error_login_error_data/archives
+Connection string: port=18530 host=/home/mb/tmp/OCTVpf5h8v
+Log file: /home/mb/ws/c/login_hook/tmp_check/log/001_login_error_login_error.log
+# Running: initdb -D /home/mb/ws/c/login_hook/tmp_check/t_001_login_error_login_error_data/pgdata -A trust -N
+The files belonging to this database system will be owned by user "mb".
+This user must also own the server process.
+
+The database cluster will be initialized with locales
+  COLLATE:  en_GB.UTF-8
+  CTYPE:    en_GB.UTF-8
+  MESSAGES: C
+  MONETARY: en_GB.UTF-8
+  NUMERIC:  en_GB.UTF-8
+  TIME:     en_GB.UTF-8
+The default database encoding has accordingly been set to "UTF8".
+The default text search configuration will be set to "english".
+
+Data page checksums are disabled.
+
+creating directory /home/mb/ws/c/login_hook/tmp_check/t_001_login_error_login_error_data/pgdata ... ok
+creating subdirectories ... ok
+selecting dynamic shared memory implementation ... posix
+selecting default max_connections ... 100
+selecting default shared_buffers ... 128MB
+selecting default time zone ... Europe/Amsterdam
+creating configuration files ... ok
+running bootstrap script ... ok
+performing post-bootstrap initialization ... ok
+
+Sync to disk skipped.
+The data directory might become corrupt if the operating system crashes.
+
+Success. You can now start the database server using:
+
+    pg_ctl -D /home/mb/ws/c/login_hook/tmp_check/t_001_login_error_login_error_data/pgdata -l logfile start
+
+# Running: /usr/local/postgresql-14.24/lib/pgxs/src/makefiles/../../src/test/regress/pg_regress --config-auth /home/mb/ws/c/login_hook/tmp_check/t_001_login_error_login_error_data/pgdata
+### Starting node "login_error"
+# Running: pg_ctl -D /home/mb/ws/c/login_hook/tmp_check/t_001_login_error_login_error_data/pgdata -l /home/mb/ws/c/login_hook/tmp_check/log/001_login_error_login_error.log -o --cluster-name=login_error start
+waiting for server to start.... done
+server started
+# Postmaster PID for node "login_error" is 60862
+ok 1 - superuser can log in with a healthy hook
+ok 2 - execution flag is reset after a successful hook
+ok 3 - ordinary user can log in with a healthy hook
+ok 4 - ordinary user sees the execution flag reset
+ok 5 - superuser can log in when the hook raises an exception
+ok 6 - failed hook is rolled back and execution flag is reset
+ok 7 - warning preserves the database name
+ok 8 - warning preserves the original error message
+ok 9 - warning preserves the original SQLSTATE
+ok 10 - ordinary user is denied login when the hook raises an exception
+ok 11 - ordinary user receives the intended rejection instead of a backend crash
+#### Begin standard error
+WARNING:  Function login_hook.login() returned with error in database login_hook_dddddddddddddddddddddddddddddddddddddddddddddddddddd.
+Please resolve the error as only superusers can login now.
+HINT:  original message = login hook diagnostic marker
+#### End standard error
+ok 12 - superuser can repair the hook and restore ordinary logins
+ok 13 - execution flag is reset after the repaired hook
+### Stopping node "login_error" using mode fast
+# Running: pg_ctl -D /home/mb/ws/c/login_hook/tmp_check/t_001_login_error_login_error_data/pgdata -m fast stop
+waiting for server to shut down.... done
+server stopped
+# No postmaster PID for node "login_error"
+1..13
